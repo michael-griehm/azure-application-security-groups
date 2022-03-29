@@ -37,21 +37,17 @@ resource "azurerm_subnet_network_security_group_association" "asg2_subnet_nsg" {
   network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
-resource "azurerm_network_security_rule" "asg-rule" {
-  name                                       = "asg-rule"
-  priority                                   = 110
-  direction                                  = "Inbound"
-  access                                     = "Allow"
-  protocol                                   = "*"
-  source_port_range                          = "*"
-  destination_port_range                     = "*"
-  source_application_security_group_ids      = [azurerm_application_security_group.asg1.id]
-  destination_application_security_group_ids = [azurerm_application_security_group.asg2.id]
-  resource_group_name                        = azurerm_resource_group.rg.name
-  network_security_group_name                = azurerm_network_security_group.nsg.name
+resource "azurerm_subnet" "asg3_subnet" {
+  name                 = "asg3-subnet"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.139.128.0/18"]
 }
 
-
+resource "azurerm_subnet_network_security_group_association" "asg3_subnet_nsg" {
+  subnet_id                 = azurerm_subnet.asg3_subnet.id
+  network_security_group_id = azurerm_network_security_group.nsg.id
+}
 
 resource "azurerm_network_security_rule" "asg-public-rule" {
   name                                       = "asg-public-rule"
@@ -63,6 +59,34 @@ resource "azurerm_network_security_rule" "asg-public-rule" {
   destination_port_range                     = "22"
   source_address_prefixes                    = ["24.31.171.98"]
   destination_application_security_group_ids = [azurerm_application_security_group.asg1.id]
+  resource_group_name                        = azurerm_resource_group.rg.name
+  network_security_group_name                = azurerm_network_security_group.nsg.name
+}
+
+resource "azurerm_network_security_rule" "asg_deny_to_asg2" {
+  name                                       = "asg-deny-to-asg2"
+  priority                                   = 110
+  direction                                  = "Inbound"
+  access                                     = "Deny"
+  protocol                                   = "*"
+  source_port_range                          = "*"
+  destination_port_range                     = "*"
+  source_application_security_group_ids      = [azurerm_application_security_group.asg1.id]
+  destination_application_security_group_ids = [azurerm_application_security_group.asg2.id]
+  resource_group_name                        = azurerm_resource_group.rg.name
+  network_security_group_name                = azurerm_network_security_group.nsg.name
+}
+
+resource "azurerm_network_security_rule" "asg_allow_to_asg3" {
+  name                                       = "asg-allow-to-asg3"
+  priority                                   = 120
+  direction                                  = "Inbound"
+  access                                     = "Allow"
+  protocol                                   = "*"
+  source_port_range                          = "*"
+  destination_port_range                     = "*"
+  source_application_security_group_ids      = [azurerm_application_security_group.asg1.id]
+  destination_application_security_group_ids = [azurerm_application_security_group.asg3.id]
   resource_group_name                        = azurerm_resource_group.rg.name
   network_security_group_name                = azurerm_network_security_group.nsg.name
 }

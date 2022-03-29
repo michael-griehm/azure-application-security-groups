@@ -30,7 +30,7 @@ variable "tags" {
 
   default = {
     environment = "demo"
-    workload    = "asgs-in-seperate-subnets"
+    workload    = "asg"
   }
 }
 
